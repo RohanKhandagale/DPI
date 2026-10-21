@@ -427,6 +427,12 @@ You can repeat a rule option to add more than one value:
 
 \`\`\`powershell
 python dpi_engine.py input.pcap filtered.pcap --block-app YouTube --block-app TikTok --block-domain tiktok
+
+# Block a destination port
+python dpi_engine.py input.pcap filtered.pcap --block-port 8080
+
+# Load rules in the original section-based format
+python dpi_engine.py input.pcap filtered.pcap --rules blocking_rules.example.txt
 \`\`\`
 
 ### Configure Worker Threads
