@@ -1,79 +1,60 @@
-# Windows Setup Guide
+# Windows Setup Guide (Python Port)
 
-This project is written in Python and does not require Visual Studio, CMake, g++, or a C++ build step.
+This repository is the Python port of the DPI packet analyzer. You do not need Visual Studio, CMake, MinGW, or a C++ compiler.
 
-## Step 1: Install Python
+## 1. Install Python
 
-1. Install Python 3.10 or newer from https://www.python.org/downloads/windows/.
-2. During installation, select **Add Python to PATH**.
-3. Open PowerShell and confirm:
+Install Python 3.10 or newer from https://www.python.org/downloads/windows/. During setup, enable **Add Python to PATH**. Open a new PowerShell window and verify:
 
-\`\`\`powershell
+```powershell
 python --version
-\`\`\`
+```
 
-## Step 2: Open the Project
+## 2. Get the repository
 
-Open PowerShell or the VS Code terminal in the folder containing \`dpi_engine.py\`.
+Download the ZIP from https://github.com/RohanKhandagale/DPI or clone it:
 
-## Step 3: Create a Virtual Environment
+```powershell
+git clone https://github.com/RohanKhandagale/DPI.git
+cd DPI
+```
 
-\`\`\`powershell
+## 3. Create an environment
+
+```powershell
 python -m venv .venv
-.venv\Scripts\Activate.ps1
+.venv\\Scripts\\Activate.ps1
+python -m pip install --upgrade pip
 pip install -r requirements.txt
-\`\`\`
+```
 
-There are no third-party packages to install. If PowerShell does not allow activation, use \`python\` directly or run \`.\.venv\Scripts\python.exe\`.
+The engine uses the Python standard library; no third-party packet library is required. If PowerShell blocks activation, use Command Prompt and run `.venv\\Scripts\\activate.bat` instead.
 
-## Step 4: Generate a Test Capture
+## 4. Generate a test capture and run DPI
 
-\`\`\`powershell
+```powershell
 python generate_test_pcap.py
-\`\`\`
-
-The command creates \`test_dpi.pcap\` with synthetic test packets.
-
-## Step 5: Run the DPI Engine
-
-\`\`\`powershell
 python dpi_engine.py test_dpi.pcap output.pcap
-\`\`\`
+```
 
-With blocking rules:
+The input is a classic Ethernet PCAP file. The engine writes packets allowed by the configured rules to `output.pcap` and prints a summary.
 
-\`\`\`powershell
-python dpi_engine.py test_dpi.pcap filtered.pcap --block-app YouTube --block-ip 192.168.1.50 --block-domain facebook
-\`\`\`
+## 5. Try blocking rules
 
-Use \`--help\` to view all options:
+```powershell
+python dpi_engine.py test_dpi.pcap filtered.pcap --block-app YouTube
+python dpi_engine.py test_dpi.pcap filtered-domain.pcap --block-domain youtube.com
+python dpi_engine.py test_dpi.pcap filtered-ip.pcap --block-ip 192.168.1.50
+```
 
-\`\`\`powershell
-python dpi_engine.py --help
-\`\`\`
+Rules can be repeated. Use `--help` to see the options currently supported by the main CLI.
 
-## Step 6: Open the Result
+## 6. Run tests
 
-Open \`output.pcap\` or \`filtered.pcap\` in Wireshark to inspect the allowed packets.
+```powershell
+python -m unittest discover -s tests -v
+```
 
-## Troubleshooting
+## Scope and limitations
 
-### Error: 'python' is not recognized
-
-Reinstall Python and select **Add Python to PATH**, or use the full path to your Python executable.
-
-### Error: Input file not found
-
-Generate the test file with \`python generate_test_pcap.py\`, or use the full path to an existing PCAP file.
-
-### Error: Unsupported capture format
-
-The current reader supports classic PCAP files. In Wireshark, use **File → Save As** and choose a PCAP format rather than PCAPNG.
-
-### No domain appears in the report
-
-The capture may not include a full visible TLS ClientHello or a plain HTTP Host header. Encrypted Client Hello, TCP segmentation, or unsupported packet formats can prevent hostname extraction.
-
-### Important scope note
-
-This tool filters a saved PCAP file. It is not a live network firewall and does not block packets on your network interface.
+This is offline PCAP analysis, not a live network firewall. The integrated engine supports Ethernet, common VLAN tags, IPv4, TCP/UDP, TLS ClientHello SNI, and unencrypted HTTP Host headers. It does not decrypt TLS, fully reassemble TCP streams, deeply inspect QUIC, or inspect IPv6. Encrypted ClientHello can also hide SNI. Results depend on the packets and payloads present in the capture.
