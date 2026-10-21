@@ -382,12 +382,12 @@ class DPIEngine:
             if flow.app == "Unknown" and (info.src_port == 53 or info.dst_port == 53):
                 flow.app = "DNS"
             if flow.app == "Unknown":
-                if info.src_port == 443 or info.dst_port == 443:
+                if info.transport == "UDP" and (info.src_port == 443 or info.dst_port == 443):
+                    flow.app = "QUIC"
+                elif info.src_port == 443 or info.dst_port == 443:
                     flow.app = "HTTPS"
                 elif info.src_port == 80 or info.dst_port == 80:
                     flow.app = "HTTP"
-                elif info.transport == "UDP" and (info.src_port == 443 or info.dst_port == 443):
-                    flow.app = "QUIC"
 
             if not flow.blocked:
                 flow.blocked = self.rules.is_blocked(info, flow)
