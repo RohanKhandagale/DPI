@@ -1,0 +1,13 @@
+[BLOCKED_IPS]
+192.168.1.50
+
+[BLOCKED_APPS]
+YouTube
+Facebook
+
+[BLOCKED_DOMAINS]
+*.tiktok.com
+example.org
+
+[BLOCKED_PORTS]
+8080
