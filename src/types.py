@@ -4,6 +4,7 @@ from enum import Enum
 from collections import Counter
 from threading import Lock
 from typing import Optional
+from time import monotonic
 
 class AppType(str, Enum):
     UNKNOWN="Unknown"; HTTP="HTTP"; HTTPS="HTTPS"; DNS="DNS"; TLS="TLS"; QUIC="QUIC"
@@ -30,6 +31,8 @@ class Connection:
     sni: str = ""
     packets_in: int = 0; packets_out: int = 0; bytes_in: int = 0; bytes_out: int = 0
     action: PacketAction = PacketAction.FORWARD
+    first_seen: float = field(default_factory=monotonic)
+    last_seen: float = field(default_factory=monotonic)
     syn_seen: bool = False; syn_ack_seen: bool = False; fin_seen: bool = False
 
 @dataclass
