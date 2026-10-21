@@ -12,9 +12,9 @@ class ConnectionTracker:
             reverse=tuple_.reverse()
             c=self._flows.get(key) or self._flows.get(reverse)
             if c is None:
-                c=Connection(tuple_); c.first_seen=now if hasattr(c,'first_seen') else None
+                c=Connection(tuple_); c.first_seen=now; c.last_seen=now
                 self._flows[key]=c
-            c.last_seen=now if hasattr(c,'last_seen') else None
+            c.last_seen=now
             return c
     def update(self,tuple_,byte_count=0,direction='in'):
         c=self.get_or_create(tuple_)
