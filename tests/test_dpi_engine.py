@@ -60,6 +60,22 @@ class DPIEngineTests(unittest.TestCase):
             self.assertGreater(engine.stats.dropped, 0)
             self.assertTrue(Path(output_file).exists())
 
+    def test_blocks_destination_port(self):
+        rules = BlockingRules(blocked_ports=[8080])
+        info = PacketInfo("10.0.0.2", "10.0.0.3", 50000, 8080, 6, "TCP", 54)
+        flow = type("Flow", (), {"app": "Unknown", "domain": ""})()
+        self.assertTrue(rules.is_blocked(info, flow))
+
+    def test_matches_wildcard_domain_rule(self):
+        rules = BlockingRules(blocked_domains=["*.tiktok.com"])
+        info = PacketInfo("10.0.0.2", "10.0.0.3", 50000, 443, 6, "TCP", 54)
+        flow = type("Flow", (), {"app": "HTTPS", "domain": "api.tiktok.com"})()
+        self.assertTrue(rules.is_blocked(info, flow))
+
+    def test_rejects_invalid_destination_port(self):
+        with self.assertRaises(ValueError):
+            BlockingRules(blocked_ports=[70000])
+
     def test_rejects_unknown_app_name(self):
         with self.assertRaises(ValueError):
             BlockingRules(blocked_apps=["not-an-app"])
