@@ -2,6 +2,8 @@
 
 This guide introduces the project, explains the networking ideas behind it, and follows a packet through the Python implementation. It is intended to help readers understand the processing flow before exploring the source files.
 
+Reference project: [Packet_analyzer](https://github.com/perryvegehan/Packet_analyzer). This repository is an independent Python implementation of the same general DPI learning concepts, not a line-by-line source copy.
+
 ---
 
 ## Table of Contents
