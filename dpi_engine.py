@@ -7,6 +7,7 @@ packets that are allowed by the configured rules to another PCAP file.
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import ipaddress
 import queue
 import struct
@@ -288,14 +289,20 @@ def classify_domain(domain: str) -> str:
 
 
 class BlockingRules:
-    def __init__(self, blocked_ips=(), blocked_apps=(), blocked_domains=()):
+    def __init__(self, blocked_ips=(), blocked_apps=(), blocked_domains=(), blocked_ports=()):
         self.blocked_ips = set()
         for value in blocked_ips:
             self.add_ip(value)
         self.blocked_apps = set()
         for value in blocked_apps:
             self.add_app(value)
-        self.blocked_domains = {value.lower() for value in blocked_domains}
+        self.blocked_domains = {value.strip().lower().rstrip('.') for value in blocked_domains}
+        self.blocked_ports = set()
+        for value in blocked_ports:
+            port = int(value)
+            if not 1 <= port <= 65535:
+                raise ValueError(f"Invalid destination port: {port}")
+            self.blocked_ports.add(port)
 
     def add_ip(self, value: str) -> None:
         self.blocked_ips.add(str(ipaddress.IPv4Address(value)))
@@ -311,10 +318,12 @@ class BlockingRules:
     def is_blocked(self, info: PacketInfo, flow: FlowState) -> bool:
         if info.src_ip in self.blocked_ips:
             return True
+        if info.dst_port in self.blocked_ports:
+            return True
         if flow.app in self.blocked_apps:
             return True
-        domain = flow.domain.lower()
-        return any(rule in domain for rule in self.blocked_domains)
+        domain = flow.domain.lower().rstrip('.')
+        return any(fnmatch.fnmatchcase(domain, rule) or (not rule.startswith('*.') and rule in domain) for rule in self.blocked_domains)
 
 
 class DPIEngine:
@@ -514,7 +523,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--block-app", action="append", default=[], metavar="APP",
                         help="Block an application, for example YouTube (repeatable)")
     parser.add_argument("--block-domain", action="append", default=[], metavar="DOMAIN",
-                        help="Block domains containing this text (repeatable)")
+                        help="Block domains by exact name, wildcard, or substring (repeatable)")
+    parser.add_argument("--block-port", action="append", default=[], type=int, metavar="PORT",
+                        help="Block traffic with this destination port (repeatable)")
+    parser.add_argument("--rules", metavar="FILE", help="Load rules from the original section-based format")
+    parser.add_argument("--verbose", action="store_true", help="Print extra processing details")
     parser.add_argument("--lbs", type=int, default=2, help="Number of load balancer threads (default: 2)")
     parser.add_argument("--fps", type=int, default=2, help="Fast path workers per load balancer (default: 2)")
     parser.add_argument("--queue-size", type=int, default=10000, help="Maximum queued items per worker (default: 10000)")
@@ -527,7 +540,25 @@ def main(argv: Optional[list[str]] = None) -> int:
     if Path(args.input).resolve() == Path(args.output).resolve():
         parser.error("Input and output files must be different.")
     try:
-        rules = BlockingRules(args.block_ip, args.block_app, args.block_domain)
+        rule_ips, rule_apps, rule_domains, rule_ports = [], [], [], []
+        if args.rules:
+            section = ""
+            with open(args.rules, encoding="utf-8") as rule_file:
+                for raw_line in rule_file:
+                    line = raw_line.strip()
+                    if not line or line.startswith("#") or line.startswith(";"):
+                        continue
+                    if line.startswith("[") and line.endswith("]"):
+                        section = line.upper()
+                    elif section == "[BLOCKED_IPS]":
+                        rule_ips.append(line)
+                    elif section == "[BLOCKED_APPS]":
+                        rule_apps.append(line)
+                    elif section == "[BLOCKED_DOMAINS]":
+                        rule_domains.append(line)
+                    elif section == "[BLOCKED_PORTS]":
+                        rule_ports.append(line)
+        rules = BlockingRules(rule_ips + args.block_ip, rule_apps + args.block_app, rule_domains + args.block_domain, rule_ports + args.block_port)
         engine = DPIEngine(rules, args.lbs, args.fps, args.queue_size)
     except (ValueError, ipaddress.AddressValueError) as exc:
         parser.error(str(exc))
@@ -539,6 +570,10 @@ def main(argv: Optional[list[str]] = None) -> int:
         print(f"[Rules] Blocked app: {app}")
     for domain in args.block_domain:
         print(f"[Rules] Blocked domain: {domain}")
+    for port in args.block_port:
+        print(f"[Rules] Blocked destination port: {port}")
+    if args.rules:
+        print(f"[Rules] Loaded rules file: {args.rules}")
     return 0 if engine.process_file(args.input, args.output) else 1
 
 
