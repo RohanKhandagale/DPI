@@ -4,6 +4,32 @@ This guide introduces the project, explains the networking ideas behind it, and 
 
 Reference project: [Packet_analyzer](https://github.com/perryvegehan/Packet_analyzer). This repository is an independent Python implementation of the same general DPI learning concepts, not a line-by-line source copy.
 
+## Python port layout
+
+The uploaded original project was reviewed to map its C++ components to Python equivalents. The implementation keeps the same component responsibilities while using Python modules. The C++ executable and headers are not retained as source files; each listed component has a Python counterpart.
+
+| Original component | Python counterpart |
+|---|---|
+| `include/types.h` / `src/types.cpp` | `include/types.py` / `src/types.py` |
+| `include/pcap_reader.h` / `src/pcap_reader.cpp` | `include/pcap_reader.py` / `src/pcap_reader.py` |
+| `include/packet_parser.h` / `src/packet_parser.cpp` | `include/packet_parser.py` / `src/packet_parser.py` |
+| `include/sni_extractor.h` / `src/sni_extractor.cpp` | `include/sni_extractor.py` / `src/sni_extractor.py` |
+| `include/rule_manager.h` / `src/rule_manager.cpp` | `include/rule_manager.py` / `src/rule_manager.py` |
+| `include/connection_tracker.h` / `src/connection_tracker.cpp` | `include/connection_tracker.py` / `src/connection_tracker.py` |
+| `include/thread_safe_queue.h` | `include/thread_safe_queue.py` / `src/thread_safe_queue.py` |
+| `include/load_balancer.h` / `src/load_balancer.cpp` | `include/load_balancer.py` / `src/load_balancer.py` |
+| `include/fast_path.h` / `src/fast_path.cpp` | `include/fast_path.py` / `src/fast_path.py` |
+| `include/dpi_engine.h` / `src/dpi_engine.cpp` | `src/dpi_engine.py` (exports the engine orchestrator) |
+| `src/dpi_mt.cpp` | `src/dpi_mt.py` |
+| `src/main_dpi.cpp` | `src/main_dpi.py` |
+| `src/main_working.cpp` | `src/main_working.py` |
+| `src/main.cpp` | `src/main.py` |
+| `src/main_simple.cpp` | `src/main_simple.py` |
+
+The original `CMakeLists.txt` is replaced by `pyproject.toml`; Python does not need a C++ compiler or CMake. The primary fully integrated command-line implementation remains `dpi_engine.py`. Component modules under `src/` expose the original architecture in a Python-friendly form.
+
+---
+
 ---
 
 ## Table of Contents
