@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "python-dpi-engine"
+version = "1.0.0"
+description = "Pure-Python offline deep packet inspection engine"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+dpi-engine = "dpi_engine:main"
+
+[tool.setuptools]
+py-modules = ["dpi_engine", "generate_test_pcap"]
