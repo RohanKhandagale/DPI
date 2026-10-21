@@ -1,4 +1,6 @@
+import tempfile
 import unittest
+from pathlib import Path
 
 from dpi_engine import (
     BlockingRules,
@@ -8,7 +10,7 @@ from dpi_engine import (
     extract_tls_sni,
     parse_packet,
 )
-from generate_test_pcap import tls_client_hello, tcp_packet
+from generate_test_pcap import create_capture, tls_client_hello, tcp_packet
 
 
 class DPIEngineTests(unittest.TestCase):
@@ -45,6 +47,18 @@ class DPIEngineTests(unittest.TestCase):
         )
         info = PacketInfo("192.168.1.50", "142.250.72.14", 51001, 443, 6, "TCP", 54)
         self.assertTrue(rules.is_blocked(info, type("Flow", (), {"app": "Unknown", "domain": ""})()))
+
+    def test_processes_generated_capture(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            input_file = str(Path(temp_dir) / "input.pcap")
+            output_file = str(Path(temp_dir) / "output.pcap")
+            create_capture(input_file)
+            from dpi_engine import DPIEngine
+            engine = DPIEngine(BlockingRules(blocked_apps=["YouTube"]), num_lbs=1, fps_per_lb=1)
+            self.assertTrue(engine.process_file(input_file, output_file))
+            self.assertGreater(engine.stats.total_packets, 0)
+            self.assertGreater(engine.stats.dropped, 0)
+            self.assertTrue(Path(output_file).exists())
 
     def test_rejects_unknown_app_name(self):
         with self.assertRaises(ValueError):
