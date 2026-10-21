@@ -432,6 +432,7 @@ class DPIEngine:
 
                 print(f"[Reader] Processing packets with {self.num_lbs} load balancer(s) and "
                       f"{self.num_lbs * self.fps_per_lb} fast path worker(s)...")
+                read_error = None
                 try:
                     for packet_header, data in reader.packets():
                         info = parse_packet(data)
@@ -446,9 +447,12 @@ class DPIEngine:
                                 self.stats.udp_packets += 1
                         lb_index = hash(info.flow_key) % self.num_lbs
                         self.lb_queues[lb_index].put((packet_header, data, info))
+                except (OSError, ValueError) as exc:
+                    read_error = exc
                 finally:
                     reader.close()
 
+                # Always stop workers, even when the input capture is truncated.
                 for work_queue in self.lb_queues:
                     work_queue.put(None)
                 for thread in lb_threads:
@@ -457,6 +461,9 @@ class DPIEngine:
                     thread.join()
                 self.output_queue.put(None)
                 writer_thread.join()
+                if read_error is not None:
+                    print(f"Error: {read_error}", file=sys.stderr)
+                    return False
                 self.stats.active_flows = sum(len(flows) for flows in self.fp_flows)
                 self._print_report(output_file)
             return True
