@@ -1,8 +1,8 @@
 """Single-threaded SNI inspection CLI port of the original src/main_simple.cpp."""
 import argparse
-from .pcap_reader import PcapReader
-from .packet_parser import parse_packet
-from .sni_extractor import extract_tls_sni
+from src.pcap_reader import PcapReader
+from src.packet_parser import parse_packet
+from src.sni_extractor import extract_tls_sni
 
 def main(argv=None):
     parser=argparse.ArgumentParser(description="Simple DPI/SNI analyzer")
