@@ -1,8 +1,8 @@
 """Packet-summary CLI port of the original src/main.cpp."""
 import argparse
 import datetime
-from .pcap_reader import PcapReader
-from .packet_parser import parse_packet
+from src.pcap_reader import PcapReader
+from src.packet_parser import parse_packet
 
 def main(argv=None):
     parser=argparse.ArgumentParser(description="Packet Analyzer v1.0")
