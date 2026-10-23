@@ -143,7 +143,7 @@ The implementation uses Python's standard library. No C++ compiler or external p
 
 ## 4. File Structure
 
-\`\`\`
+```text
 DPI/
 ├── dpi_engine.py          # PCAP reader, parser, classifier, rules, worker threads and CLI
 ├── generate_test_pcap.py  # Creates a small synthetic test capture
@@ -155,7 +155,7 @@ DPI/
 │   └── test_dpi_engine.py # Unit tests for packet parsing and classification
 ├── .gitignore
 └── README.md
-\`\`\`
+```
 
 Generated capture files are created on your computer and do not need to be committed.
 
