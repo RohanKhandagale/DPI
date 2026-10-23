@@ -119,21 +119,17 @@ TLS Client Hello:
 
 ### What This Project Does
 
-\`\`\`
-Wireshark/tcpdump PCAP
-          |
-          v
-     Python DPI Engine
-       - Read packets
-       - Parse headers
-       - Classify flows
-       - Apply blocking rules
-       - Report statistics
-          |
-          v
-Filtered output PCAP
-\`\`\`
+```text
+┌─────────────┐     ┌──────────────────────┐     ┌─────────────┐
+│ Wireshark / │     │ Python DPI Engine    │     │ Filtered    │
+│ tcpdump     │ ──► │ - Read packets       │ ──► │ output      │
+│ PCAP        │     │ - Parse headers      │     │ PCAP        │
+└─────────────┘     │ - Classify flows     │     └─────────────┘
+                    │ - Apply blocking     │
+                    │ - Report statistics  │
+                    └──────────────────────┘
 
+```
 ### Processing Modes
 
 | Mode | Entry point | Use case |
