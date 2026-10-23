@@ -97,7 +97,11 @@ Packets with the same five-tuple are tracked as one flow. A flow retains its dis
 
 ### What is SNI?
 
-**Server Name Indication (SNI)** is a TLS extension that can include the requested hostname in a ClientHello. When that information is visible in the capture, the engine can use it to classify traffic. Some modern connections use Encrypted Client Hello (ECH), and a capture may not contain a complete ClientHello in one packet; in those cases, hostname extraction may not be possible.
+Server Name Indication (SNI) is part of the TLS/HTTPS handshake. When you visit https://www.youtube.com:
+
+  1. Your browser sends a "Client Hello" message
+  2. This message includes the domain name in plaintext (not encrypted yet!)
+  3. The server uses this to know which certificate to send
 
 ---
 
