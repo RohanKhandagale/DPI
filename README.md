@@ -35,14 +35,14 @@ Reference project: [Packet_analyzer](https://github.com/perryvegehan/Packet_anal
 
 ### What This DPI Engine Does
 
-\`\`\`
+```text
 Input PCAP → [Python DPI Engine] → Output PCAP
                      |
                      ├── Parses Ethernet / IPv4 / TCP / UDP
                      ├── Identifies applications from visible HTTP Host or TLS SNI
                      ├── Applies IP, application, and domain rules
                      └── Prints packet and application statistics
-\`\`\`
+```
 
 This is an **offline PCAP analyzer**. It processes packets saved in a capture file; it does not attach itself to a network interface or directly stop live traffic.
 
@@ -167,38 +167,42 @@ A packet passes through the following steps inside \`dpi_engine.py\`.
 
 ### Step 1: Read the PCAP File
 
-\`\`\`python
+```text
+python
 reader = PcapReader("capture.pcap")
 reader.open()
-\`\`\`
+```
 
 The reader checks the classic PCAP global header, identifies byte order and timestamp precision, and reads each packet record. The original packet record header is preserved when an allowed packet is written.
 
 ### Step 2: Read Each Packet
 
-\`\`\`python
+```text
+python
 for packet_header, packet_data in reader.packets():
     packet_info = parse_packet(packet_data)
     if packet_info is None:
         continue
-\`\`\`
+```
 
 Each record contains a timestamp/header and the captured network bytes. Packets that do not match the supported Ethernet/IPv4/TCP/UDP formats are skipped.
 
 ### Step 3: Parse Protocol Headers
 
-\`\`\`python
+```text
+python
 packet_info = parse_packet(packet_data)
 print(packet_info.src_ip, packet_info.dst_ip)
 print(packet_info.src_port, packet_info.dst_port)
 print(packet_info.transport)
-\`\`\`
+```
 
 The parser checks the Ethernet type, IPv4 header length, protocol number, and TCP or UDP header. It calculates where the application payload begins.
 
 ### Step 4: Track the Flow
 
-\`\`\`python
+```text
+python
 flow_key = (
     packet_info.src_ip,
     packet_info.dst_ip,
@@ -208,7 +212,7 @@ flow_key = (
 )
 flow = flows.setdefault(flow_key, FlowState())
 flow.packets += 1
-\`\`\`
+```
 
 A flow table stores the classification and blocking state for each five-tuple.
 
