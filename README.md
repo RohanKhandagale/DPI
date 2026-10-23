@@ -54,17 +54,12 @@ This is an **offline PCAP analyzer**. It processes packets saved in a capture fi
 
 When a device connects to a service, data is carried through several protocol layers:
 
-\`\`\`
-┌─────────────────────────────────────────────────────────┐
-│ Layer 7: Application    │ HTTP, TLS, DNS               │
-├─────────────────────────────────────────────────────────┤
-│ Layer 4: Transport      │ TCP, UDP                     │
-├─────────────────────────────────────────────────────────┤
-│ Layer 3: Network        │ IPv4 addresses               │
-├─────────────────────────────────────────────────────────┤
-│ Layer 2: Data Link      │ Ethernet and MAC addresses   │
-└─────────────────────────────────────────────────────────┘
-\`\`\`
+| Layer | Protocols / Details |
+| :--- | :--- |
+| **Layer 7: Application** | HTTP, TLS, DNS |
+| **Layer 4: Transport** | TCP, UDP |
+| **Layer 3: Network** | IPv4 addresses |
+| **Layer 2: Data Link** | Ethernet and MAC addresses |
 
 ### A Packet's Structure
 
