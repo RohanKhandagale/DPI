@@ -1,8 +1,6 @@
 # DPI Engine - Deep Packet Inspection System
 
 This guide introduces the project, explains the networking ideas behind it, and follows a packet through the Python implementation. It is intended to help readers understand the processing flow before exploring the source files.
-
-Reference project: [Packet_analyzer](https://github.com/perryvegehan/Packet_analyzer). This repository is an independent Python implementation of the same general DPI learning concepts, not a line-by-line source copy.
 ---
 
 ## Table of Contents
@@ -220,12 +218,13 @@ A flow table stores the classification and blocking state for each five-tuple.
 
 For TCP destination/source port 443, the engine tries to extract TLS SNI. For port 80, it looks for an HTTP Host header. DNS traffic is classified using port 53, and HTTP/HTTPS fallback labels are used when no domain is available.
 
-\`\`\`python
+```text
+python
 domain = extract_tls_sni(payload)
 if domain:
     flow.domain = domain
     flow.app = classify_domain(domain)
-\`\`\`
+```
 
 ### Step 6: Check Blocking Rules
 
@@ -247,7 +246,7 @@ The default run uses queues and worker threads to demonstrate a pipeline.
 
 ### Architecture Overview
 
-\`\`\`
+```text
 PCAP Reader
     |
     v
@@ -260,7 +259,7 @@ Fast Path workers (FP0, FP1, ...)
                                   |
                                   v
                               PCAP Writer
-\`\`\`
+```
 
 ### Why Use This Design?
 
@@ -308,7 +307,7 @@ Recognized labels include Google, YouTube, Facebook, Instagram, WhatsApp, Twitte
 
 A TLS client typically sends a ClientHello before encrypted application data begins. The ClientHello may include a server name:
 
-\`\`\`
+```text
 ClientHello
   ├── Version and Random
   ├── Session ID
@@ -317,7 +316,7 @@ ClientHello
   └── Extensions
        └── SNI
             └── www.example.com
-\`\`\`
+```
 
 The extractor checks the record and handshake types, safely walks the variable-length fields, then reads the hostname from the SNI extension. If the payload is incomplete or malformed, it returns no hostname rather than assuming one exists.
 
@@ -342,7 +341,7 @@ The extractor checks the record and handshake types, safely walks the variable-l
 
 ### The Blocking Flow
 
-\`\`\`
+```text
 Packet arrives
      |
      v
@@ -359,7 +358,7 @@ Domain rule matches? ------ Yes ---> Drop
      No
      v
 Write packet to output PCAP
-\`\`\`
+```
 
 ### Flow-Based Blocking
 
@@ -381,38 +380,43 @@ This is PCAP filtering, not a live firewall. It does not retroactively remove ea
 
 Open PowerShell in the project folder:
 
-\`\`\`powershell
+```text
+powershell
 python --version
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-\`\`\`
+```
 
 If PowerShell blocks virtual-environment activation, run the Python commands using \`.\.venv\Scripts\python.exe\` directly.
 
 ### Create Test Data
 
-\`\`\`powershell
+```text
+powershell
 python generate_test_pcap.py
-\`\`\`
+```
 
 This creates \`test_dpi.pcap\` with synthetic HTTP, TLS, and DNS examples. It does not capture live traffic.
 
 ### Basic Usage
 
-\`\`\`powershell
+```text
+powershell
 python dpi_engine.py test_dpi.pcap output.pcap
-\`\`\`
+```
 
 ### With Blocking Rules
 
-\`\`\`powershell
+```text
+powershell
 python dpi_engine.py test_dpi.pcap output.pcap --block-app YouTube --block-ip 192.168.1.50 --block-domain facebook
-\`\`\`
+```
 
 You can repeat a rule option to add more than one value:
 
-\`\`\`powershell
+```text
+powershell
 python dpi_engine.py input.pcap filtered.pcap --block-app YouTube --block-app TikTok --block-domain tiktok
 
 # Block a destination port
@@ -420,13 +424,14 @@ python dpi_engine.py input.pcap filtered.pcap --block-port 8080
 
 # Load rules in the original section-based format
 python dpi_engine.py input.pcap filtered.pcap --rules blocking_rules.example.txt
-\`\`\`
+```
 
 ### Configure Worker Threads
 
-\`\`\`powershell
+```text
+powershell
 python dpi_engine.py input.pcap output.pcap --lbs 4 --fps 2
-\`\`\`
+```
 
 This creates four load-balancer threads and eight fast-path worker threads. The writer has its own thread.
 
