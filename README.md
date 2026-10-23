@@ -64,7 +64,7 @@ When a device connects to a service, data is carried through several protocol la
 ### A Packet's Structure
 
 An Ethernet frame commonly contains nested protocol headers followed by application data:
-
+```text
 ┌──────────────────────────────────────────────────────────────────┐
 │ Ethernet Header (14 bytes)                                       │
 │ ┌──────────────────────────────────────────────────────────────┐ │
@@ -78,6 +78,8 @@ An Ethernet frame commonly contains nested protocol headers followed by applicat
 │ │ └──────────────────────────────────────────────────────────┘ │ │
 │ └──────────────────────────────────────────────────────────────┘ │
 └──────────────────────────────────────────────────────────────────┘
+
+```
 
 ### The Five-Tuple
 
