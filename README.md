@@ -103,6 +103,14 @@ Server Name Indication (SNI) is part of the TLS/HTTPS handshake. When you visit 
   2. This message includes the domain name in plaintext (not encrypted yet!)
   3. The server uses this to know which certificate to send
 
+TLS Client Hello:
+├── Version: TLS 1.2
+├── Random: [32 bytes]
+├── Cipher Suites: [list]
+└── Extensions:
+    └── SNI Extension:
+        └── Server Name: "www.youtube.com"  ← We extract THIS!
+
 ---
 
 ## 3. Project Overview
